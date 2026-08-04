@@ -47,3 +47,7 @@ Accept: application/json
 ### Get sale
 GET {{Ambev.DeveloperEvaluation.WebApi_HostAddress}}/api/sales/{{SaleId}}
 Accept: application/json
+
+### Delete sale
+DELETE {{Ambev.DeveloperEvaluation.WebApi_HostAddress}}/api/sales/{{SaleId}}
+Accept: application/json

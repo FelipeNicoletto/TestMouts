@@ -110,6 +110,26 @@ public class SalesControllerTests(ApiWebApplicationFactory webApplicationFactory
         Assert.Equal("Updated Branch", sale.Branch);
     }
 
+    [Fact]
+    public async Task SalesControllerDelete_WhenSaleExists_ShouldDeleteSale()
+    {
+        // Arrange - create sale first
+        var content = CreateSaleData.ValidCreateSaleRequest(4);
+        var createResponse = await _httpClient.PostAsJsonAsync("api/sales", content);
+        var createSaleResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponseWithData<CreateSaleResponse>>();
+        var id = createSaleResponse!.Data!.Id;
+
+        // Act
+        var response = await _httpClient.DeleteAsync($"api/sales/{id}");
+        var deleteResponse = await response.Content.ReadFromJsonAsync<ApiResponse>();
+
+        // Assert
+        Assert.True(deleteResponse?.Success ?? false);
+
+        var sale = await GetSaleByIdAsync(id);
+        Assert.Null(sale);
+    }
+
     private async Task<Sale?> GetSaleByIdAsync(Guid id)
     {
         using var scope = webApplicationFactory.Services.CreateScope();
