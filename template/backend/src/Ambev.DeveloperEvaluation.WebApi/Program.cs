@@ -8,6 +8,7 @@ using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.WebApi.Middleware;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using MassTransit;
 using Serilog;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
@@ -41,6 +42,15 @@ public class Program
             builder.RegisterDependencies();
 
             builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(ApplicationLayer).Assembly);
+
+            builder.Services.AddMassTransit(x =>
+            {
+                x.AddConsumer<Messaging.Consumers.SaleCreatedConsumer>();
+                x.UsingInMemory((context, cfg) =>
+                {
+                    cfg.ConfigureEndpoints(context);
+                });
+            });
 
             builder.Services.AddMediatR(cfg =>
             {

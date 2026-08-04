@@ -1,6 +1,21 @@
 @Ambev.DeveloperEvaluation.WebApi_HostAddress = http://localhost:5119
 
-GET {{Ambev.DeveloperEvaluation.WebApi_HostAddress}}/weatherforecast/
+### Create sale
+POST {{Ambev.DeveloperEvaluation.WebApi_HostAddress}}/api/sales
+Content-Type: application/json
 Accept: application/json
+{
+  "number": 1,
+  "customerName": "Customer Name",
+  "date": "2026-08-04T02:40:07.148Z",
+  "branch": "Store X",
+  "status": 0,
+  "products": [
+    {
+      "productId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "quantity": 2,
+      "unitPrice": 10
+    }
+  ]
+}
 
-###
