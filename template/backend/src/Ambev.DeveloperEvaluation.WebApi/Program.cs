@@ -59,6 +59,9 @@ public class Program
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+
+                using var scope = app.Services.CreateScope();
+                scope.ServiceProvider.GetRequiredService<DefaultContext>().Database.Migrate();
             }
 
             app.UseHttpsRedirection();
