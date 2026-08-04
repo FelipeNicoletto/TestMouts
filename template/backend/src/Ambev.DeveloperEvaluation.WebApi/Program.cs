@@ -46,6 +46,9 @@ public class Program
             builder.Services.AddMassTransit(x =>
             {
                 x.AddConsumer<Messaging.Consumers.SaleCreatedConsumer>();
+                x.AddConsumer<Messaging.Consumers.SaleModifiedConsumer>();
+                x.AddConsumer<Messaging.Consumers.SaleCancelledConsumer>();
+
                 x.UsingInMemory((context, cfg) =>
                 {
                     cfg.ConfigureEndpoints(context);

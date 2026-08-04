@@ -3,6 +3,7 @@ using Ambev.DeveloperEvaluation.Integration.Features.TestData;
 using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CreateSale;
+using Ambev.DeveloperEvaluation.WebApi.Features.Sales.UpdateSale;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
@@ -45,6 +46,48 @@ public class SalesControllerTests(ApiWebApplicationFactory webApplicationFactory
             Assert.Equal(contentProduct.UnitPrice, saleProduct.UnitPrice);
             Assert.Equal(contentProduct.UnitPrice * contentProduct.Quantity, saleProduct.TotalAmount + saleProduct.Discounts);
         }
+
+    [Fact]
+    public async Task SalesControllerUpdate_WhenValidDataIsProvided_ShouldUpdateSale()
+    {
+        // Arrange - create sale first
+        var content = CreateSaleData.ValidCreateSaleRequest(3);
+        var createResponse = await _httpClient.PostAsJsonAsync("api/sales", content);
+        var createSaleResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponseWithData<CreateSaleResponse>>();
+        var id = createSaleResponse!.Data!.Id;
+
+        var updateRequest = new UpdateSaleRequest
+        {
+            Id = id,
+            Number = content.Number,
+            CustomerName = "Updated Customer",
+            Date = content.Date,
+            Branch = "Updated Branch",
+            Status = content.Status,
+            Products = [.. content.Products.Select(p => new UpdateSaleProductRequest
+            {
+                Id = Guid.Empty,
+                ProductId = p.ProductId,
+                Quantity = p.Quantity,
+                UnitPrice = p.UnitPrice
+            })]
+        };
+
+        // Act
+        var response = await _httpClient.PutAsJsonAsync($"api/sales/{id}", updateRequest);
+        var updateResponse = await response.Content.ReadFromJsonAsync<ApiResponseWithData<UpdateSaleResponse>>();
+
+        // Assert
+        Assert.True(updateResponse?.Success);
+        Assert.NotNull(updateResponse?.Data);
+        Assert.Equal("Updated Customer", updateResponse!.Data!.CustomerName);
+
+        // Verify in database
+        var sale = await GetSaleByIdAsync(id);
+        Assert.NotNull(sale);
+        Assert.Equal("Updated Customer", sale!.CustomerName);
+        Assert.Equal("Updated Branch", sale.Branch);
+    }
     }
 
     private async Task<Sale?> GetSaleByIdAsync(Guid id)
