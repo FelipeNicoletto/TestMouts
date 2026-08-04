@@ -3,6 +3,7 @@ using Ambev.DeveloperEvaluation.Integration.Features.TestData;
 using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CreateSale;
+using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetSale;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.UpdateSale;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,6 +47,26 @@ public class SalesControllerTests(ApiWebApplicationFactory webApplicationFactory
             Assert.Equal(contentProduct.UnitPrice, saleProduct.UnitPrice);
             Assert.Equal(contentProduct.UnitPrice * contentProduct.Quantity, saleProduct.TotalAmount + saleProduct.Discounts);
         }
+    }
+
+    [Fact]
+    public async Task SalesControllerGet_WhenSaleExists_ShouldReturnSale()
+    {
+        // Arrange - create sale first
+        var content = CreateSaleData.ValidCreateSaleRequest(2);
+        var createResponse = await _httpClient.PostAsJsonAsync("api/sales", content);
+        var createSaleResponse = await createResponse.Content.ReadFromJsonAsync<ApiResponseWithData<CreateSaleResponse>>();
+        var id = createSaleResponse!.Data!.Id;
+
+        // Act
+        var response = await _httpClient.GetAsync($"api/sales/{id}");
+        var saleResponse = await response.Content.ReadFromJsonAsync<ApiResponseWithData<GetSaleResponse>>();
+
+        // Assert
+        Assert.True(saleResponse?.Success);
+        Assert.NotNull(saleResponse?.Data);
+        Assert.Equal(id, saleResponse!.Data!.Id);
+    }
 
     [Fact]
     public async Task SalesControllerUpdate_WhenValidDataIsProvided_ShouldUpdateSale()
@@ -87,7 +108,6 @@ public class SalesControllerTests(ApiWebApplicationFactory webApplicationFactory
         Assert.NotNull(sale);
         Assert.Equal("Updated Customer", sale!.CustomerName);
         Assert.Equal("Updated Branch", sale.Branch);
-    }
     }
 
     private async Task<Sale?> GetSaleByIdAsync(Guid id)

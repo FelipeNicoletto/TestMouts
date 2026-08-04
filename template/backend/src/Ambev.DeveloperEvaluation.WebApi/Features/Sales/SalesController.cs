@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CreateSale;
+using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetSale;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.UpdateSale;
 using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
+using Ambev.DeveloperEvaluation.Application.Sales.GetSale;
 using Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales;
@@ -37,6 +39,25 @@ public class SalesController : BaseController
         var result = await _mediator.Send(command, cancellationToken);
 
         return Created(string.Empty, _mapper.Map<CreateSaleResponse>(result), "Sale created successfully");
+    }
+
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ApiResponseWithData<GetSaleResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Get([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        var request = new GetSaleRequest { Id = id };
+        var validator = new GetSaleRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = _mapper.Map<GetSaleCommand>(request.Id);
+        var result = await _mediator.Send(command, cancellationToken);
+
+        return Ok(_mapper.Map<GetSaleResponse>(result), "Sale retrieved successfully");
     }
 
     [HttpPut("{id}")]
