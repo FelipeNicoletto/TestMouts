@@ -1,3 +1,26 @@
+# Run Project
+
+### Open folder src
+```
+cd .\template\backend\src
+```
+
+### Run Docker-compose
+```
+docker compose up
+```
+
+### Execute Requests
+
+#### Execute the requests in the ***Ambev.DeveloperEvaluation.WebApi.http*** file.
+
+- Execute the ***Create sale*** request
+- Copy the generated ***Id*** to the ***@SaleId*** variable
+- Execute others requests
+
+---
+---
+
 # Developer Evaluation Project
 
 `READ CAREFULLY`
@@ -75,3 +98,4 @@ This section includes links to the detailed documentation for the different API 
 This section describes the overall structure and organization of the project files and directories. 
 
 See [Project Structure](/.doc/project-structure.md)
+

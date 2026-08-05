@@ -1,5 +1,5 @@
-@Ambev.DeveloperEvaluation.WebApi_HostAddress = http://localhost:5119
-@SaleId = ac450ca4-feec-4cc0-9afa-1b178cd5a365
+@Ambev.DeveloperEvaluation.WebApi_HostAddress = http://localhost:8080
+@SaleId = 764e6d6b-65c7-4099-9360-b185bfbcc659
 
 ### Create sale
 POST {{Ambev.DeveloperEvaluation.WebApi_HostAddress}}/api/sales
@@ -20,12 +20,14 @@ Accept: application/json
   ]
 }
 
+#### COPY ID TO @SaleId variable ####
+
 ### Update sale
 PUT {{Ambev.DeveloperEvaluation.WebApi_HostAddress}}/api/sales/{{SaleId}}
 Content-Type: application/json
 Accept: application/json
 {
-  "number": 2,
+  "number": 1,
   "customerName": "Customer Name",
   "date": "2026-08-04T02:40:07.148Z",
   "branch": "Store X",
