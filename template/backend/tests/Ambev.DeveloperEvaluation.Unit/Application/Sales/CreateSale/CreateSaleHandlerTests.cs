@@ -6,7 +6,7 @@ using AutoMapper;
 using FluentAssertions;
 using FluentValidation;
 using NSubstitute;
-using MassTransit;
+using Rebus.Bus;
 using Xunit;
 using Ambev.DeveloperEvaluation.Application.Messaging;
 
@@ -17,7 +17,7 @@ public class CreateSaleHandlerTests
     private readonly ISaleRepository _saleRepository;
     private readonly IDiscountCalculator _discountCalculator;
     private readonly IMapper _mapper;
-    private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IBus _bus;
     private readonly CreateSaleHandler _handler;
 
     public CreateSaleHandlerTests()
@@ -25,8 +25,8 @@ public class CreateSaleHandlerTests
         _saleRepository = Substitute.For<ISaleRepository>();
         _discountCalculator = Substitute.For<IDiscountCalculator>();
         _mapper = Substitute.For<IMapper>();
-        _publishEndpoint = Substitute.For<IPublishEndpoint>();
-        _handler = new CreateSaleHandler(_saleRepository, _discountCalculator, _mapper, _publishEndpoint);
+        _bus = Substitute.For<IBus>();
+        _handler = new CreateSaleHandler(_saleRepository, _discountCalculator, _mapper, _bus);
     }
 
     [Fact(DisplayName = "Given valid command When handling Then creates sale and returns result")]
@@ -62,7 +62,7 @@ public class CreateSaleHandlerTests
         handled.Id.Should().Be(sale.Id);
         _discountCalculator.Received(1).ApplyDiscounts(Arg.Is<Sale>(s => s == sale));
         await _saleRepository.Received(1).CreateAsync(Arg.Is<Sale>(s => s == sale), Arg.Any<CancellationToken>());
-        await _publishEndpoint.Received(1).Publish(Arg.Is<SaleCreated>(e => e.Id == sale.Id), Arg.Any<CancellationToken>());
+        await _bus.Received(1).Publish(Arg.Is<SaleCreated>(e => e.Id == sale.Id));
     }
 
     [Fact(DisplayName = "Given invalid command When handling Then throws validation exception")]

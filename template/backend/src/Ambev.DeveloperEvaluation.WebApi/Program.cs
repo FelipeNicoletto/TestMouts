@@ -8,7 +8,9 @@ using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.WebApi.Middleware;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using MassTransit;
+using Rebus.Config;
+using Rebus.Routing.TypeBased;
+using Rebus.Transport.InMem;
 using Serilog;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
@@ -43,17 +45,12 @@ public class Program
 
             builder.Services.AddAutoMapper(typeof(Program).Assembly, typeof(ApplicationLayer).Assembly);
 
-            builder.Services.AddMassTransit(x =>
-            {
-                x.AddConsumer<Messaging.Consumers.SaleCreatedConsumer>();
-                x.AddConsumer<Messaging.Consumers.SaleModifiedConsumer>();
-                x.AddConsumer<Messaging.Consumers.SaleCancelledConsumer>();
+            builder.Services.AddRebus(configure => configure
+                .Transport(t => t.UseInMemoryTransport(new InMemNetwork(), "ambev.developerevaluation"))
+                .Routing(r => r.TypeBased().MapAssemblyNamespaceOf<ApplicationLayer>("ambev.developerevaluation"))
+            );
 
-                x.UsingInMemory((context, cfg) =>
-                {
-                    cfg.ConfigureEndpoints(context);
-                });
-            });
+            builder.Services.AutoRegisterHandlersFromAssemblyOf<ApplicationLayer>();
 
             builder.Services.AddMediatR(cfg =>
             {

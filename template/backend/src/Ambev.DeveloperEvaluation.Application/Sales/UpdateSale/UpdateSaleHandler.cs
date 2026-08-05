@@ -3,7 +3,7 @@ using Ambev.DeveloperEvaluation.Domain.Services;
 using AutoMapper;
 using FluentValidation;
 using MediatR;
-using MassTransit;
+using Rebus.Bus;
 using Ambev.DeveloperEvaluation.Application.Messaging;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
@@ -12,7 +12,7 @@ public class UpdateSaleHandler(
     ISaleRepository saleRepository,
     IDiscountCalculator discountCalculator,
     IMapper mapper,
-    IPublishEndpoint publishEndpoint) : IRequestHandler<UpdateSaleCommand, UpdateSaleResult>
+    IBus bus) : IRequestHandler<UpdateSaleCommand, UpdateSaleResult>
 {
     public async Task<UpdateSaleResult> Handle(UpdateSaleCommand command, CancellationToken cancellationToken)
     {
@@ -36,18 +36,18 @@ public class UpdateSaleHandler(
 
         await saleRepository.UpdateAsync(sale, cancellationToken);
 
-        await publishEndpoint.Publish(new SaleModified
+        await bus.Send(new SaleModified
         {
             Id = sale.Id,
             Number = sale.Number
-        }, cancellationToken);
+        });
 
         if (isCancelled)
-            await publishEndpoint.Publish(new SaleCancelled
+            await bus.Send(new SaleCancelled
             {
                 Id = sale.Id,
                 Number = sale.Number
-            }, cancellationToken);
+            });
 
         return mapper.Map<UpdateSaleResult>(sale);
     }
